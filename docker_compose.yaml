@@ -1,0 +1,34 @@
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always  # If a container crashes → Docker restarts it automatically.
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+      # without this :
+           # If you stop and remove containers → your database data is LOST ❌
+      # with this :
+           # Your data is stored in a Docker volume → persistent storage ✅
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    depends_on: #This ensures Mongo Express starts after MongoDB.
+      - mongodb
+    ports:
+      - 8080:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+volumes:
+  mongo-data:
+    driver: local
+

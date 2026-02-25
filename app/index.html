@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Todo App</title>
+<style>
+  body { font-family: Arial; max-width: 500px; margin: 40px auto; }
+  input, button { padding: 10px; font-size: 16px; }
+  ul { list-style: none; padding: 0; }
+  li { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .delete-btn { color: red; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Todo List</h1>
+<input type="text" id="taskInput" placeholder="Enter task">
+<button id="addBtn">Add Task</button>
+<ul id="taskList"></ul>
+
+<script>
+const taskList = document.getElementById("taskList");
+const taskInput = document.getElementById("taskInput");
+const addBtn = document.getElementById("addBtn");
+
+// Fetch all tasks
+async function fetchTasks() {
+  const res = await fetch("/tasks");
+  const tasks = await res.json();
+  taskList.innerHTML = "";
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.textContent = task.title;
+    const del = document.createElement("span");
+    del.textContent = "Delete";
+    del.className = "delete-btn";
+    del.onclick = async () => {
+      await fetch(`/tasks/${task._id}`, { method: "DELETE" });
+      fetchTasks();
+    };
+    li.appendChild(del);
+    taskList.appendChild(li);
+  });
+}
+
+// Add task
+addBtn.onclick = async () => {
+  const title = taskInput.value.trim();
+  if (!title) return;
+  await fetch("/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title })
+  });
+  taskInput.value = "";
+  fetchTasks();
+};
+
+// Load tasks initially
+fetchTasks();
+</script>
+</body>
+</html>

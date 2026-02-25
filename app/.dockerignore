@@ -1,0 +1,5 @@
+# Ignore local node_modules; container will install dependencies itself
+node_modules
+
+# Ignore npm debug log files; not needed in the container
+npm-debug.log
