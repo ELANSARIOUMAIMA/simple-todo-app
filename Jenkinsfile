@@ -11,6 +11,11 @@ pipeline {
         stage("Test") {
             steps {
                 echo 'Testing the application...'
+                // Groovy code
+                script {
+                    def test = 2 + 2 > 5 ? 'good' : 'not good'
+                    echo "Test result: ${test}"
+                }
             }
         }
 
