@@ -139,9 +139,90 @@ docker login
 docker push <your-dockerhub-username>/my-todo-image:1.0
 ```
 
-4. **Pull the image on any machine**:
+
+
+## ⚙️ CI/CD with Jenkins
+
+I set up a **Jenkins pipeline** to automate building, testing, and deploying the Todo app using Docker.
+
+### 📝 Pipeline Issues & Solutions
+
+#### **Problem 1 — Docker Not Found**
+
+* **Error:** `docker: not found`, exit code `127`
+* **Cause:** Jenkins container does not include the Docker CLI.
+* **Solution:**
+
+  1. Run the Jenkins container with access to host Docker:
+
+  ```bash
+  docker run -d \
+    -p 8082:8080 -p 50000:50000 \
+    -v jenkins_home:/var/jenkins_home \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    --name jenkins \
+    jenkins/jenkins:lts
+  ```
+
+  2. Access the Jenkins container as root:
+
+  ```bash
+  docker exec -u root -it jenkins bash
+  ```
+
+  3. Install Docker CLI and Docker Compose inside the container:
+
+  ```bash
+  apt update
+  apt install -y docker.io docker-compose
+  ```
+
+  4. Allow the `jenkins` user to access the Docker socket:
+
+  ```bash
+  usermod -aG docker jenkins
+  ```
+
+> ✅ Now Jenkins can run Docker commands inside its container.
+
+---
+
+#### **Problem 2 — Permission Denied to Docker Socket**
+
+* **Error:** `permission denied while trying to connect to the Docker daemon`, exit code `1`
+* **Cause:** Jenkins user doesn’t have permission to access `/var/run/docker.sock`.
+* **Solution:** Already fixed by adding Jenkins user to the Docker group:
 
 ```bash
+usermod -aG docker jenkins
+systemctl restart jenkins
+```
+
+---
+
+#### **Problem 3 — Container Name Conflict**
+
+* **Error:** `Conflict. The container name "/mongodb" is already in use`
+* **Cause:** Docker Compose tried to start a container that already exists.
+* **Solution:** Remove the existing container before redeploying:
+
+```bash
+docker rm -f mongodb
+docker-compose up -d --build
+```
+
+---
+
+### ✅ Jenkins Pipeline Result
+
+* Node.js Docker image built and pushed to Docker Hub
+* MongoDB and Mongo-Express deployed with Docker Compose
+* Full-stack app runs automatically on container restart
+
+> With these fixes, every new commit to GitHub triggers the pipeline to automatically rebuild and deploy the app.
+
+---
+
 docker pull <your-dockerhub-username>/my-todo-image:1.0
 ```
 
