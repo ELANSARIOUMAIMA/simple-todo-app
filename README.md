@@ -221,8 +221,5 @@ docker-compose up -d --build
 
 > With these fixes, every new commit to GitHub triggers the pipeline to automatically rebuild and deploy the app.
 
----
 
-docker pull <your-dockerhub-username>/my-todo-image:1.0
-```
 
